@@ -1,0 +1,169 @@
+// Complete Code for Smart Compare App
+
+// app/layout.tsx
+"use client"
+
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { CartProvider } from "@/lib/contexts/cart-context"
+import { CompareProvider } from "@/lib/contexts/compare-context"
+import Navigation from "@/components/navigation"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export const metadata: Metadata = {
+  title: "Smart Compare - Compare Prices Across Platforms",
+  description: "Compare prices for groceries, household items, and more across Blinkit, Zepto, BigBasket, and JioMart",
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <CartProvider>
+          <CompareProvider>
+            <Navigation />
+            {children}
+          </CompareProvider>
+        </CartProvider>
+      </body>
+    </html>
+  )
+}
+
+// app/page.tsx
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { ShoppingCart, GitCompare, TrendingDown, Zap, Star, Users, Shield } from "lucide-react"
+
+export default function HomePage() {
+  return (
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <section className="py-20 px-4 bg-gradient-to-br from-primary/10 via-secondary/5 to-accent/10">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="mb-8">
+            <Badge className="mb-4 bg-gradient-to-r from-primary to-secondary text-white">
+              <Zap className="w-4 h-4 mr-1" />
+              Smart Price Comparison
+            </Badge>
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Smart Compare
+            </h1>
+            <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
+              Compare prices across Blinkit, Zepto, BigBasket, and JioMart. Save money on groceries, household items, and more with our intelligent price comparison tool.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+            <Link href="/categories">
+              <Button size="lg" className="bg-gradient-to-r from-primary to-secondary hover-glow text-lg px-8 py-6">
+                <ShoppingCart className="w-5 h-5 mr-2" />
+                Start Shopping
+              </Button>
+            </Link>
+            <Link href="/compare">
+              <Button size="lg" variant="outline" className="hover-glow text-lg px-8 py-6">
+                <GitCompare className="w-5 h-5 mr-2" />
+                Compare Products
+              </Button>
+            </Link>
+          </div>
+
+          {/* Platform Logos */}
+          <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-yellow-400"></div>
+              <span className="font-semibold">Blinkit</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-purple-500"></div>
+              <span className="font-semibold">Zepto</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-green-500"></div>
+              <span className="font-semibold">BigBasket</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 rounded-full bg-blue-500"></div>
+              <span className="font-semibold">JioMart</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold mb-4">Why Choose Smart Compare?</h2>
+            <p className="text-xl text-muted-foreground">Discover the benefits of our intelligent price comparison platform</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="glassmorphism hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <TrendingDown className="w-6 h-6 text-green-500" />
+                  <span>Save Money</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Compare prices across all major platforms and find the best deals. Our algorithm helps you save up to 30% on your grocery bills.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glassmorphism hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Zap className="w-6 h-6 text-yellow-500" />
+                  <span>Lightning Fast</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Get instant price comparisons with our optimized search engine. No more switching between apps or websites.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glassmorphism hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Star className="w-6 h-6 text-orange-500" />
+                  <span>Quality Assured</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  All products are sourced from trusted platforms with quality guarantees. Compare ratings and reviews easily.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glassmorphism hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="w-6 h-6 text-blue-500" />
+                  <span>Community Driven</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Join thousands of smart shoppers who save money every day. Share deals and get personalized recommendations.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="glassmorphism hover-glow">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
