@@ -6,151 +6,29 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Search, Menu, X, User, LogOut, Settings, Eye, EyeOff } from "lucide-react"
+import { ShoppingCart, Search, Menu, X, User, LogOut, Settings } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-
+import { useAuth } from "@/lib/contexts/auth-context"
+import { UserAvatarDropdown } from "@/components/user-avatar-dropdown"
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isSignInOpen, setIsSignInOpen] = useState(false)
-  const [isSignUpOpen, setIsSignUpOpen] = useState(false)
-  const [showSignInPassword, setShowSignInPassword] = useState(false)
-  const [showSignUpPassword, setShowSignUpPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [user, setUser] = useState({
-    name: "",
-    email: "",
-  })
-
-  const [registeredUsers, setRegisteredUsers] = useState<Array<{ name: string; email: string; password: string }>>([])
-
-  const [signUpForm, setSignUpForm] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    agreeToTerms: false,
-  })
-
-  const [signInForm, setSignInForm] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  })
-
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
+  const { user, logout } = useAuth()
 
-  const handleSignIn = () => {
-    const foundUser = registeredUsers.find((u) => u.email === signInForm.email && u.password === signInForm.password)
-
-    if (foundUser) {
-      console.log("[v0] User signed in:", foundUser)
-      setUser({
-        name: foundUser.name,
-        email: foundUser.email,
-      })
-      setIsAuthenticated(true)
-      setIsSignInOpen(false)
-      // Reset form
-      setSignInForm({ email: "", password: "", rememberMe: false })
-    } else {
-      alert("Invalid email or password. Please sign up first or check your credentials.")
-    }
-  }
-
-  const handleSignUp = () => {
-    if (signUpForm.password !== signUpForm.confirmPassword) {
-      alert("Passwords do not match!")
-      return
-    }
-    if (!signUpForm.agreeToTerms) {
-      alert("Please agree to the Terms of Service and Privacy Policy")
-      return
-    }
-    if (!signUpForm.fullName || !signUpForm.email || !signUpForm.password) {
-      alert("Please fill in all fields")
-      return
-    }
-
-    console.log("[v0] User registered:", signUpForm.fullName, signUpForm.email)
-
-    // Store the registered user
-    setRegisteredUsers([
-      ...registeredUsers,
-      {
-        name: signUpForm.fullName,
-        email: signUpForm.email,
-        password: signUpForm.password,
-      },
-    ])
-
-    // Reset signup form
-    setSignUpForm({
-      fullName: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-      agreeToTerms: false,
-    })
-
-    // Close signup modal and open signin modal
-    setIsSignUpOpen(false)
-    setIsSignInOpen(true)
-
-    // Show success message
-    alert("Account created successfully! Please sign in with your credentials.")
-  }
-
-  const handleLogout = () => {
-    console.log("[v0] User logged out")
-    setIsAuthenticated(false)
-    setUser({ name: "", email: "" })
+  const handleLogout = async () => {
+    await logout()
   }
 
   const getInitials = (name: string, email: string) => {
-    console.log("[v0] Getting initials for:", { name, email })
-
-    // If name exists and has content, use first letter of name
     if (name && name.trim().length > 0) {
-      const initial = name.trim().charAt(0).toUpperCase()
-      console.log("[v0] Using name initial:", initial)
-      return initial
+      return name.trim().charAt(0).toUpperCase()
     }
-
-    // Fallback to first letter of email
     if (email && email.trim().length > 0) {
-      const initial = email.trim().charAt(0).toUpperCase()
-      console.log("[v0] Using email initial:", initial)
-      return initial
+      return email.trim().charAt(0).toUpperCase()
     }
-
-    // Final fallback
-    console.log("[v0] Using default initial: U")
     return "U"
-  }
-
-  const switchToSignIn = () => {
-    setIsSignUpOpen(false)
-    setIsSignInOpen(true)
-  }
-
-  const switchToSignUp = () => {
-    setIsSignInOpen(false)
-    setIsSignUpOpen(true)
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -214,70 +92,20 @@ export function Navigation() {
                 />
               </form>
 
-              {!isAuthenticated ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsSignInOpen(true)}
-                    className="hover-glow hover-scale bg-transparent transition-all duration-300"
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Sign In
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => setIsSignUpOpen(true)}
-                    className="bg-gradient-to-r from-primary to-secondary hover-glow hover-lift transition-all duration-300"
-                  >
-                    Sign Up
-                  </Button>
-                </>
-              ) : (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="relative h-12 w-12 rounded-full hover-scale transition-all duration-300 p-0 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                    >
-                      <Avatar className="h-12 w-12 ring-2 ring-primary/30 hover:ring-primary/50 transition-all duration-300">
-                        <AvatarImage src="/placeholder.svg" alt={user!.name || user!.email} />
-                        <AvatarFallback
-                          className="bg-gradient-to-br from-primary via-accent to-secondary text-white font-bold text-xl"
-                          style={{ backgroundColor: "#0D9488" }}
-                        >
-                          {getInitials(user!.name, user!.email)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 glassmorphism-strong animate-scale-in" align="end" forceMount>
-                    <DropdownMenuLabel className="font-normal">
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-semibold leading-none text-foreground">{user!.name || "User"}</p>
-                        <p className="text-xs leading-none text-muted-foreground">{user!.email}</p>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer hover-glow focus:bg-accent/10">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>View Profile</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer hover-glow focus:bg-accent/10">
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={handleLogout}
-                      className="cursor-pointer hover-glow text-destructive focus:text-destructive focus:bg-destructive/10"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+                  {!user ? (
+                    <Link href="/login">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="hover-glow hover-scale bg-transparent transition-all duration-300"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Login
+                      </Button>
+                    </Link>
+                  ) : (
+                    <UserAvatarDropdown />
+                  )}
             </div>
 
             {/* Mobile menu button */}
@@ -319,53 +147,38 @@ export function Navigation() {
                     />
                   </form>
 
-                  {!isAuthenticated ? (
-                    <div className="flex space-x-2 mobile-stack mobile-full">
+                  {!user ? (
+                    <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
-                          setIsSignInOpen(true)
-                          setIsMenuOpen(false)
-                        }}
-                        className="flex-1 hover-glow bg-transparent"
+                        className="w-full hover-glow bg-transparent"
                       >
                         <User className="w-4 h-4 mr-2" />
-                        Sign In
+                        Login
                       </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setIsSignUpOpen(true)
-                          setIsMenuOpen(false)
-                        }}
-                        className="flex-1 bg-gradient-to-r from-primary to-secondary hover-glow"
-                      >
-                        Sign Up
-                      </Button>
-                    </div>
+                    </Link>
                   ) : (
                     <div className="flex flex-col space-y-2">
                       <div className="flex items-center space-x-3 p-3 rounded-lg glassmorphism ring-1 ring-primary/10">
                         <Avatar className="h-14 w-14 ring-2 ring-primary/30">
-                          <AvatarImage src="/placeholder.svg" alt={user!.name || user!.email} />
+                          <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
                           <AvatarFallback
                             className="bg-gradient-to-br from-primary via-accent to-secondary text-white font-bold text-xl"
-                            style={{ backgroundColor: "#0D9488" }}
                           >
-                            {getInitials(user!.name, user!.email)}
+                            {getInitials(user.displayName || '', user.email || '')}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-foreground truncate">{user!.name || "User"}</p>
-                          <p className="text-xs text-muted-foreground truncate">{user!.email}</p>
+                          <p className="text-sm font-semibold text-foreground truncate">{user.displayName || "User"}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         </div>
                       </div>
-                      <Button variant="outline" size="sm" className="w-full justify-start hover-glow bg-transparent">
+                      <Button onClick={() => { router.push('/profile'); setIsMenuOpen(false); }} variant="outline" size="sm" className="w-full justify-start hover-glow bg-transparent">
                         <User className="w-4 h-4 mr-2" />
                         View Profile
                       </Button>
-                      <Button variant="outline" size="sm" className="w-full justify-start hover-glow bg-transparent">
+                      <Button onClick={() => { router.push('/settings'); setIsMenuOpen(false); }} variant="outline" size="sm" className="w-full justify-start hover-glow bg-transparent">
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
                       </Button>
@@ -386,254 +199,6 @@ export function Navigation() {
           )}
         </div>
       </nav>
-
-      {/* Sign In Modal */}
-      <Dialog open={isSignInOpen} onOpenChange={setIsSignInOpen}>
-        <DialogContent className="sm:max-w-[500px] p-0 gap-0 bg-[#E0F2F1] border-none">
-          <div className="flex flex-col items-center pt-8 pb-6 px-8">
-            {/* Logo */}
-            <div className="flex items-center space-x-2 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#0D9488] to-[#F97316] rounded-lg flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold">
-                <span className="text-[#475569]">Smart </span>
-                <span className="text-[#F97316]">Compare</span>
-              </span>
-            </div>
-
-            {/* White Card */}
-            <div className="w-full bg-white rounded-2xl shadow-lg p-8">
-              <DialogHeader className="space-y-2 mb-6">
-                <DialogTitle className="text-2xl font-bold text-[#1E293B] text-center">Welcome Back</DialogTitle>
-                <DialogDescription className="text-[#64748B] text-center">
-                  Sign in to your account to continue
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signin-email" className="text-[#1E293B] font-medium">
-                    Email Address
-                  </Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={signInForm.email}
-                    onChange={(e) => setSignInForm({ ...signInForm, email: e.target.value })}
-                    className="h-12 bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#0D9488] focus:ring-[#0D9488]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signin-password" className="text-[#1E293B] font-medium">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="signin-password"
-                      type={showSignInPassword ? "text" : "password"}
-                      placeholder="Enter your password"
-                      value={signInForm.password}
-                      onChange={(e) => setSignInForm({ ...signInForm, password: e.target.value })}
-                      className="h-12 bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#0D9488] focus:ring-[#0D9488] pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowSignInPassword(!showSignInPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#1E293B]"
-                    >
-                      {showSignInPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="remember"
-                      checked={signInForm.rememberMe}
-                      onCheckedChange={(checked) => setSignInForm({ ...signInForm, rememberMe: checked as boolean })}
-                      className="border-[#CBD5E1]"
-                    />
-                    <Label htmlFor="remember" className="text-sm text-[#475569] cursor-pointer font-normal">
-                      Remember me
-                    </Label>
-                  </div>
-                  <Button variant="link" className="px-0 text-sm text-[#0D9488] hover:text-[#0F766E] h-auto">
-                    Forgot password?
-                  </Button>
-                </div>
-
-                <Button
-                  onClick={handleSignIn}
-                  className="w-full h-12 bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:opacity-90 text-white font-semibold text-base mt-6"
-                >
-                  Sign In
-                </Button>
-
-                <p className="text-sm text-center text-[#64748B] mt-4">
-                  Don't have an account?{" "}
-                  <button
-                    onClick={() => {
-                      setIsSignInOpen(false)
-                      setIsSignUpOpen(true)
-                    }}
-                    className="text-[#0D9488] hover:text-[#0F766E] font-medium"
-                  >
-                    Sign up here
-                  </button>
-                </p>
-              </div>
-            </div>
-
-            {/* Terms Text */}
-            <p className="text-xs text-center text-[#64748B] mt-6 max-w-md">
-              By signing in, you agree to our{" "}
-              <button className="text-[#0D9488] hover:underline">Terms of Service</button> and{" "}
-              <button className="text-[#0D9488] hover:underline">Privacy Policy</button>
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Sign Up Modal */}
-      <Dialog open={isSignUpOpen} onOpenChange={setIsSignUpOpen}>
-        <DialogContent className="sm:max-w-[500px] p-0 gap-0 bg-[#E0F2F1] border-none">
-          <div className="flex flex-col items-center pt-8 pb-6 px-8">
-            {/* Logo */}
-            <div className="flex items-center space-x-2 mb-8">
-              <div className="w-10 h-10 bg-gradient-to-r from-[#0D9488] to-[#F97316] rounded-lg flex items-center justify-center">
-                <ShoppingCart className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold">
-                <span className="text-[#475569]">Smart </span>
-                <span className="text-[#F97316]">Compare</span>
-              </span>
-            </div>
-
-            {/* White Card */}
-            <div className="w-full bg-white rounded-2xl shadow-lg p-8">
-              <DialogHeader className="space-y-2 mb-6">
-                <DialogTitle className="text-2xl font-bold text-[#1E293B] text-center">Create Account</DialogTitle>
-                <DialogDescription className="text-[#64748B] text-center">
-                  Join Smart Compare to start saving money
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name" className="text-[#1E293B] font-medium">
-                    Full Name
-                  </Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Your full name"
-                    value={signUpForm.fullName}
-                    onChange={(e) => setSignUpForm({ ...signUpForm, fullName: e.target.value })}
-                    className="h-12 bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#0D9488] focus:ring-[#0D9488]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email" className="text-[#1E293B] font-medium">
-                    Email Address
-                  </Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={signUpForm.email}
-                    onChange={(e) => setSignUpForm({ ...signUpForm, email: e.target.value })}
-                    className="h-12 bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#0D9488] focus:ring-[#0D9488]"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password" className="text-[#1E293B] font-medium">
-                    Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="signup-password"
-                      type={showSignUpPassword ? "text" : "password"}
-                      placeholder="Create a strong password"
-                      value={signUpForm.password}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, password: e.target.value })}
-                      className="h-12 bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#0D9488] focus:ring-[#0D9488] pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#1E293B]"
-                    >
-                      {showSignUpPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password" className="text-[#1E293B] font-medium">
-                    Confirm Password
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="signup-confirm-password"
-                      type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Confirm your password"
-                      value={signUpForm.confirmPassword}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, confirmPassword: e.target.value })}
-                      className="h-12 bg-[#F8FAFC] border-[#E2E8F0] focus:border-[#0D9488] focus:ring-[#0D9488] pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-[#1E293B]"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-2 pt-2">
-                  <Checkbox
-                    id="terms"
-                    checked={signUpForm.agreeToTerms}
-                    onCheckedChange={(checked) => setSignUpForm({ ...signUpForm, agreeToTerms: checked as boolean })}
-                    className="border-[#CBD5E1] mt-1"
-                  />
-                  <Label htmlFor="terms" className="text-sm text-[#475569] cursor-pointer font-normal leading-relaxed">
-                    I agree to the <button className="text-[#0D9488] hover:underline">Terms of Service</button> and{" "}
-                    <button className="text-[#0D9488] hover:underline">Privacy Policy</button>
-                  </Label>
-                </div>
-
-                <Button
-                  onClick={handleSignUp}
-                  className="w-full h-12 bg-gradient-to-r from-[#0D9488] to-[#F97316] hover:opacity-90 text-white font-semibold text-base mt-6"
-                >
-                  Create Account
-                </Button>
-
-                <p className="text-sm text-center text-[#64748B] mt-4">
-                  Already have an account?{" "}
-                  <button
-                    onClick={() => {
-                      setIsSignUpOpen(false)
-                      setIsSignInOpen(true)
-                    }}
-                    className="text-[#0D9488] hover:text-[#0F766E] font-medium"
-                  >
-                    Sign in here
-                  </button>
-                </p>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }

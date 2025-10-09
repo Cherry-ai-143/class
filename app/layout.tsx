@@ -7,6 +7,7 @@ import { Navigation } from "@/components/navigation"
 import { Suspense } from "react"
 import { CompareProvider } from "@/lib/contexts/compare-context"
 import { CartProvider } from "@/lib/contexts/cart-context"
+import { AuthProvider } from "@/lib/contexts/auth-context"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -25,11 +26,13 @@ export default function RootLayout({
       <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
         <CompareProvider>
           <CartProvider>
-            <Suspense fallback={<div>Loading...</div>}>
-              <Navigation />
-              <main className="min-h-screen">{children}</main>
-              <Analytics />
-            </Suspense>
+            <AuthProvider>
+              <Suspense fallback={<div>Loading...</div>}>
+                <Navigation />
+                <main className="min-h-screen">{children}</main>
+                <Analytics />
+              </Suspense>
+            </AuthProvider>
           </CartProvider>
         </CompareProvider>
       </body>
