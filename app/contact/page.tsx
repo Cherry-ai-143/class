@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import emailjs from '@emailjs/browser'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -14,8 +14,9 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    subject: "",
+    title: "",
     message: "",
+    phone: "",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -31,15 +32,31 @@ export default function ContactPage() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate form submission
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        {
+          name: formData.name,       // matches {{name}}
+          email: formData.email,     // matches {{email}}
+          title: formData.title,     // matches {{title}}
+          message: formData.message, // matches {{message}}
+          phone: formData.phone      // optional, add {{phone}} in template if needed
+        },
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+      )
 
-    setIsSubmitting(false)
-    setIsSubmitted(true)
-    setFormData({ name: "", email: "", subject: "", message: "" })
+      setIsSubmitted(true)
+      setFormData({ name: "", email: "", title: "", message: "", phone: "" })
 
-    // Reset success message after 5 seconds
-    setTimeout(() => setIsSubmitted(false), 5000)
+      // Reset success message after 5 seconds
+      setTimeout(() => setIsSubmitted(false), 5000)
+    } catch (error) {
+      console.error('Failed to send email:', error)
+      alert(`Failed to send message: ${String(error)}. Please try again.`)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -83,7 +100,7 @@ export default function ContactPage() {
                         <Label htmlFor="name">Full Name</Label>
                         <Input
                           id="name"
-                          name="name"
+                          name="name"  // matches {{name}} in EmailJS template
                           value={formData.name}
                           onChange={handleInputChange}
                           placeholder="Your full name"
@@ -95,7 +112,7 @@ export default function ContactPage() {
                         <Label htmlFor="email">Email Address</Label>
                         <Input
                           id="email"
-                          name="email"
+                          name="email"  // matches {{email}} in EmailJS template
                           type="email"
                           value={formData.email}
                           onChange={handleInputChange}
@@ -107,11 +124,25 @@ export default function ContactPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="subject">Subject</Label>
+                      <Label htmlFor="phone">Phone Number</Label>
                       <Input
-                        id="subject"
-                        name="subject"
-                        value={formData.subject}
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        placeholder="Your phone number"
+                        required
+                        className="glassmorphism"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="title">Subject</Label>
+                      <Input
+                        id="title"
+                        name="title"  // matches {{title}} in EmailJS template
+                        value={formData.title}
                         onChange={handleInputChange}
                         placeholder="What's this about?"
                         required
@@ -123,7 +154,7 @@ export default function ContactPage() {
                       <Label htmlFor="message">Message</Label>
                       <Textarea
                         id="message"
-                        name="message"
+                        name="message"  // matches {{message}} in EmailJS template
                         value={formData.message}
                         onChange={handleInputChange}
                         placeholder="Tell us more about your inquiry..."
@@ -167,7 +198,7 @@ export default function ContactPage() {
                   <Mail className="w-5 h-5 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold">Email</h3>
-                    <p className="text-muted-foreground">support@smartcompare.com</p>
+                    <p className="text-muted-foreground">mohancc91@gmail.com</p>
                   </div>
                 </div>
 
@@ -175,7 +206,7 @@ export default function ContactPage() {
                   <Phone className="w-5 h-5 text-primary mt-1" />
                   <div>
                     <h3 className="font-semibold">Phone</h3>
-                    <p className="text-muted-foreground">+91 98765 43210</p>
+                    <p className="text-muted-foreground">+91 93803 69890</p>
                   </div>
                 </div>
 
@@ -204,27 +235,6 @@ export default function ContactPage() {
                       Sunday: Closed
                     </p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="glassmorphism hover-glow">
-              <CardHeader>
-                <CardTitle>Quick Support</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-muted-foreground text-sm">
-                  Need immediate help? Check out our FAQ section or reach out through these channels:
-                </p>
-                <div className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start hover-glow bg-transparent">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Live Chat
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start hover-glow bg-transparent">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Call Support
-                  </Button>
                 </div>
               </CardContent>
             </Card>

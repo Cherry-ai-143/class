@@ -4,25 +4,22 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { platforms } from "@/lib/types"
 import { getLowestPrice, getLowestPricePlatform } from "@/lib/utils/price-helpers"
-import { MapPin, ShoppingCart, ExternalLink, TrendingDown, Clock, CheckCircle, XCircle, Trash2 } from "lucide-react"
+import { MapPin, ShoppingCart, ExternalLink, TrendingDown, Clock, CheckCircle, XCircle, Trash2, Loader2 } from "lucide-react"
 import { useCompare } from "@/lib/contexts/compare-context"
 import { useCart } from "@/lib/contexts/cart-context"
 import { useRouter } from "next/navigation"
 import type { Product } from "@/lib/types"
 
-const cities = ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Pune", "Ahmedabad"]
 
 export default function ComparePage() {
   const { compareProducts, removeFromCompare, clearCompare } = useCompare()
   const { setCartFromCompare } = useCart()
   const router = useRouter()
-  const [selectedCity, setSelectedCity] = useState("")
-  const [pincode, setPincode] = useState("")
+  const [detectedLocation, setDetectedLocation] = useState<{city: string, area: string, landmark: string, pincode: string} | null>(null)
+  const [isDetecting, setIsDetecting] = useState(false)
   const [comparisonData, setComparisonData] = useState<any>(null)
   const [isComparing, setIsComparing] = useState(false)
 
@@ -32,12 +29,48 @@ export default function ComparePage() {
 
   useEffect(() => {
     if (compareProducts.length > 0) {
-      // Set default city if not selected
-      if (!selectedCity && !pincode) {
-        setSelectedCity("Mumbai")
-      }
+      // No default location - require detection
     }
   }, [compareProducts])
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by this browser.")
+      return
+    }
+
+    setIsDetecting(true)
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1`
+          )
+          const data = await response.json()
+
+          const city = data.address?.city || data.address?.town || data.address?.village || ""
+          const area = data.address?.suburb || data.address?.neighbourhood || data.address?.subarea || ""
+          const landmark = data.address?.amenity || data.address?.building || data.address?.road || ""
+          const postcode = data.address?.postcode || ""
+
+          setDetectedLocation({ city, area, landmark, pincode: postcode })
+        } catch (error) {
+          console.error("Error fetching location data:", error)
+          alert("Unable to detect location. Please try again.")
+        } finally {
+          setIsDetecting(false)
+        }
+      },
+      (error) => {
+        console.error("Geolocation error:", error)
+        alert("Unable to access location. Please try again.")
+        setIsDetecting(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    )
+  }
 
   const handleCompare = async () => {
     if (compareProducts.length < 1) {
@@ -45,8 +78,8 @@ export default function ComparePage() {
       return
     }
 
-    if (!selectedCity && !pincode) {
-      alert("Please select a city or enter a pincode")
+    if (!detectedLocation) {
+      alert("Please detect your location first")
       return
     }
 
@@ -98,7 +131,7 @@ export default function ComparePage() {
       products: selectedProductsData,
       basketTotals,
       cheapestPlatform: cheapestPlatform[0],
-      location: selectedCity || pincode,
+      location: detectedLocation.city || detectedLocation.pincode,
     })
 
     setIsComparing(false)
@@ -220,40 +253,42 @@ export default function ComparePage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="city">Select City</Label>
-                  <Select value={selectedCity} onValueChange={setSelectedCity}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose your city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities.map((city) => (
-                        <SelectItem key={city} value={city}>
-                          {city}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleDetectLocation}
+                  disabled={isDetecting}
+                  className="w-full"
+                >
+                  {isDetecting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Detecting...
+                    </>
+                  ) : (
+                    <>
+                      <MapPin className="mr-2 h-4 w-4" />
+                      Detect My Location
+                    </>
+                  )}
+                </Button>
 
-                <div className="text-center text-muted-foreground">or</div>
-
-                <div>
-                  <Label htmlFor="pincode">Enter Pincode</Label>
-                  <Input
-                    id="pincode"
-                    placeholder="e.g., 400001"
-                    value={pincode}
-                    onChange={(e) => setPincode(e.target.value)}
-                    disabled={!!selectedCity}
-                  />
-                </div>
+                {detectedLocation && (
+                  <div className="mt-4 p-3 bg-green-50 rounded-md border border-green-200">
+                    <p className="text-sm font-medium text-green-800 mb-2">Detected:</p>
+                    <div className="text-sm text-green-700 space-y-1">
+                      <p>City: {detectedLocation.city || "Unknown"}</p>
+                      <p>Area: {detectedLocation.area || "Unknown"}</p>
+                      <p>Landmark: {detectedLocation.landmark || "Unknown"}</p>
+                      <p>Pincode: {detectedLocation.pincode || "Unknown"}</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Button
               onClick={handleCompare}
-              disabled={compareProducts.length < 1 || (!selectedCity && !pincode) || isComparing}
+              disabled={compareProducts.length < 1 || !detectedLocation || isComparing}
               className="w-full bg-gradient-to-r from-primary to-secondary hover-glow text-lg py-6"
             >
               {isComparing ? "Comparing..." : "Compare Basket"}

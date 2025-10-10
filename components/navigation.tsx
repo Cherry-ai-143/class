@@ -50,7 +50,7 @@ export function Navigation() {
 
   return (
     <>
-      <nav className="sticky top-0 z-50 glassmorphism-strong animate-slide-in">
+      <nav className="sticky top-0 z-[60] glassmorphism-strong animate-slide-in pointer-events-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
@@ -92,20 +92,20 @@ export function Navigation() {
                 />
               </form>
 
-                  {!user ? (
-                    <Link href="/login">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="hover-glow hover-scale bg-transparent transition-all duration-300"
-                      >
-                        <User className="w-4 h-4 mr-2" />
-                        Login
-                      </Button>
-                    </Link>
-                  ) : (
-                    <UserAvatarDropdown />
-                  )}
+              {!user ? (
+                <Link href="/login">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hover-glow hover-scale bg-transparent transition-all duration-300"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Login
+                  </Button>
+                </Link>
+              ) : (
+                <UserAvatarDropdown />
+              )}
             </div>
 
             {/* Mobile menu button */}
@@ -149,11 +149,7 @@ export function Navigation() {
 
                   {!user ? (
                     <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full hover-glow bg-transparent"
-                      >
+                      <Button variant="outline" size="sm" className="w-full hover-glow bg-transparent">
                         <User className="w-4 h-4 mr-2" />
                         Login
                       </Button>
@@ -162,11 +158,9 @@ export function Navigation() {
                     <div className="flex flex-col space-y-2">
                       <div className="flex items-center space-x-3 p-3 rounded-lg glassmorphism ring-1 ring-primary/10">
                         <Avatar className="h-14 w-14 ring-2 ring-primary/30">
-                          <AvatarImage src={user.photoURL || ''} alt={user.displayName || ''} />
-                          <AvatarFallback
-                            className="bg-gradient-to-br from-primary via-accent to-secondary text-white font-bold text-xl"
-                          >
-                            {getInitials(user.displayName || '', user.email || '')}
+                          <AvatarImage src={user.photoURL || ""} alt={user.displayName || ""} />
+                          <AvatarFallback className="bg-gradient-to-br from-primary via-accent to-secondary text-white font-bold text-xl">
+                            {getInitials(user.displayName || "", user.email || "")}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex flex-col flex-1 min-w-0">
@@ -174,11 +168,27 @@ export function Navigation() {
                           <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                         </div>
                       </div>
-                      <Button onClick={() => { router.push('/profile'); setIsMenuOpen(false); }} variant="outline" size="sm" className="w-full justify-start hover-glow bg-transparent">
+                      <Button
+                        onClick={() => {
+                          router.push("/profile")
+                          setIsMenuOpen(false)
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start hover-glow bg-transparent"
+                      >
                         <User className="w-4 h-4 mr-2" />
                         View Profile
                       </Button>
-                      <Button onClick={() => { router.push('/settings'); setIsMenuOpen(false); }} variant="outline" size="sm" className="w-full justify-start hover-glow bg-transparent">
+                      <Button
+                        onClick={() => {
+                          router.push("/settings")
+                          setIsMenuOpen(false)
+                        }}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start hover-glow bg-transparent"
+                      >
                         <Settings className="w-4 h-4 mr-2" />
                         Settings
                       </Button>

@@ -19,7 +19,7 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-background via-muted to-background py-20 px-4">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 animate-float"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 animate-float pointer-events-none"></div>
         <div className="relative max-w-7xl mx-auto text-center">
           <div className="animate-slide-in">
             <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent animate-glow">

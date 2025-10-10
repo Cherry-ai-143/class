@@ -1,14 +1,14 @@
-# Firebase Google Login Implementation
+# Location Section Updates in Compare Page
 
 ## Tasks
-- [x] Install Firebase SDK dependency
-- [x] Create Firebase configuration file (lib/firebase.ts)
-- [x] Create Auth context (lib/contexts/auth-context.tsx)
-- [x] Create Login page (app/login/page.tsx) with Google login button, logout button, and user display
-- [x] Update Navigation component to use Firebase auth
-- [x] Update app/layout.tsx to include AuthProvider
-- [ ] Test Google login functionality
-- [x] Provide Firebase setup instructions
+- [x] Edit app/compare/page.tsx: Remove "or" text between city and pincode
+- [x] Edit app/compare/page.tsx: Enable manual pincode input (remove disabled attribute)
+- [x] Verify styling: Glassmorphism card, pin icon (MapPin), labels "Select City" and "Enter Pincode", placeholder "e.g., 400001"
+- [x] Test: Ensure both city and pincode can be used independently, validation works
+- [x] Add real-time pincode and city verification logic
+- [ ] Test validation: Error on invalid pincode, button disabled if no valid location
+- [x] Add "Detect My Location" button with Geolocation API and Nominatim reverse geocoding
+- [ ] Test detection: Auto-fill fields, show detected message, handle errors
 
 ## Progress
-- Implementation completed. Ready for testing.
+- Implementation in progress. Ready for testing.
